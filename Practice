@@ -447,3 +447,13 @@ Currently data is stored in memory and can be replaced with database easily.”
 ✅ Project documentation
 ✅ Viva short notes
 फक्त सांग 🔥
+
+
+
+
+
+The user starts the journey on the login screen of the AlwaysFresh application, where they can either log in using their registered mobile number or email or create a new account through a simple registration process. After successful login, the user is redirected to the home dashboard, which is designed similar to a quick commerce app like Blinkit. The top navigation bar displays the application name on the left, a search bar in the center for quickly finding food packages, and icons for cart and user profile on the right side.
+On the left side of the screen, a vertical category panel is visible that allows users to browse different food and package categories such as All Packages, Veg Meals, Non-Veg Meals, Snacks, and Beverages. The main content area shows food packages in the form of cards with images, package name, price, and an “Add” button. When the user selects a package and clicks on the Add button, the item is added to the cart, and the cart icon updates accordingly.
+The user can click on the cart icon to navigate to the cart page, where all selected food packages are listed along with quantity and total price. From the cart page, the user proceeds to checkout, where delivery details are confirmed. After confirming the delivery information, the user is redirected to the payment page.
+On the payment screen, multiple payment options are displayed such as Cash on Delivery, UPI, and Card payment. The user selects a preferred payment method and completes the payment. Once the payment is successful, an order confirmation screen is shown with a success message indicating that the order has been placed successfully.
+Finally, the application displays a friendly thank-you message such as “Your order has been placed successfully. Thank you for choosing AlwaysFresh. Please visit again.” This completes the end-to-end quick commerce flow from login to payment, following a user experience similar to Blinkit.
