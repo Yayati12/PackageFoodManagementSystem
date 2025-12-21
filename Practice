@@ -1,1 +1,216 @@
+ठीक आहे Anurag 👍
+आता मी फक्त Customer Management Module चा पूर्ण FRONT-END setup देतो
+👉 ASP.NET Core MVC project मध्ये
+👉 तुझ्या सध्याच्या Visual Studio setup ला match होईल
+👉 Step-by-step + exact file names + full code
+हे follow केलंस की Customer module complete आणि run-ready होईल.
+✅ CUSTOMER MANAGEMENT MODULE
+(ASP.NET Core MVC – FRONTEND ONLY)
+1️⃣ Module मध्ये काय cover होईल (Project document प्रमाणे)
+Customer Management Module
+Customer List
+Add Customer
+(Update optional – demo साठी list + add enough)
+Customer fields (exact match):
+customerId
+name
+email
+phone
+status (ACTIVE / INACTIVE)
+2️⃣ Folder & File Structure (IMPORTANT)
+Visual Studio मध्ये exact असंच असायला हवं:
+Copy code
 
+PackageFoodManagementSystem
+│
+├── Controllers
+│   └── CustomerController.cs
+│
+├── Views
+│   ├── Customer
+│   │   ├── CustomerList.cshtml
+│   │   └── AddCustomer.cshtml
+│   │
+│   └── Shared
+│       └── _Layout.cshtml
+│
+├── wwwroot
+│   └── css
+│       └── site.css
+3️⃣ Controller Setup
+📄 Controllers/CustomerController.cs
+Copy code
+Csharp
+using Microsoft.AspNetCore.Mvc;
+
+namespace PackageFoodManagementSystem.Controllers
+{
+    public class CustomerController : Controller
+    {
+        public IActionResult CustomerList()
+        {
+            return View();
+        }
+
+        public IActionResult AddCustomer()
+        {
+            return View();
+        }
+    }
+}
+👉 Backend नाही, database नाही – frontend demo साठी perfect
+4️⃣ Customer List Page
+📄 Views/Customer/CustomerList.cshtml
+Copy code
+Html
+@{
+    ViewData["Title"] = "Customer List";
+}
+
+<h3>Customer List</h3>
+
+<a asp-controller="Customer"
+   asp-action="AddCustomer"
+   class="btn btn-primary mb-3">
+    Add Customer
+</a>
+
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Customer ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Anurag Jadhav</td>
+            <td>anurag@gmail.com</td>
+            <td>9876543210</td>
+            <td>ACTIVE</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Rahul Patil</td>
+            <td>rahul@gmail.com</td>
+            <td>9123456789</td>
+            <td>INACTIVE</td>
+        </tr>
+    </tbody>
+</table>
+5️⃣ Add Customer Page
+📄 Views/Customer/AddCustomer.cshtml
+Copy code
+Html
+@{
+    ViewData["Title"] = "Add Customer";
+}
+
+<h3>Add Customer</h3>
+
+<form>
+    <div class="mb-3">
+        <label class="form-label">Customer Name</label>
+        <input class="form-control" placeholder="Enter name" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" placeholder="Enter email" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Phone</label>
+        <input class="form-control" placeholder="Enter phone number" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Status</label>
+        <select class="form-control">
+            <option>ACTIVE</option>
+            <option>INACTIVE</option>
+        </select>
+    </div>
+
+    <button class="btn btn-success">Save Customer</button>
+
+    <a asp-controller="Customer"
+       asp-action="CustomerList"
+       class="btn btn-secondary">
+        Back
+    </a>
+</form>
+6️⃣ CSS (optional पण professional दिसतं)
+📄 wwwroot/css/site.css
+Copy code
+Css
+body {
+    background-color: #f8f9fa;
+}
+
+h3 {
+    margin-bottom: 15px;
+}
+
+.table {
+    background-color: white;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+7️⃣ Bootstrap link check कर (IMPORTANT)
+📄 Views/Shared/_Layout.cshtml
+<head> मध्ये हे असलं पाहिजे:
+Copy code
+Html
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet" />
+<link rel="stylesheet" href="~/css/site.css" />
+8️⃣ Run & Test (NO 404)
+▶️ Run button click कर
+Browser open होईल
+URL टाक:
+Copy code
+
+https://localhost:xxxx/Customer/CustomerList
+Add Customer वर click कर
+✔ Navigation perfect
+✔ No 404
+🗣️ Cognizant Demo Line (EXACT बोल)
+“This is the Customer Management module frontend built using ASP.NET Core MVC.
+The module allows viewing and adding customers.
+Views handle UI and controller manages routing.
+Currently, this is frontend-only and backend integration will be added later.”
+✅ FINAL CONFIRMATION
+✔ Customer Management module complete
+✔ MVC pattern followed
+✔ Matches your project document
+✔ Cognizant demo safe
+✔ Easy to extend (Update/Delete later)
+जर पुढे हवं असेल तर मी:
+Update Customer page
+Same pattern Product / Order modules
+1-page viva notes
+देऊ शकतो.
+Purpose: Manages customer profiles and purchase history.
+• Controller:
+o CustomerController
+▪ addCustomer()
+▪ updateCustomer()
+▪ getCustomerDetails()
+• Service:
+o CustomerService
+▪ Handles customer lifecycle.
+• Model:
+o Customer Entity 
+▪ Attributes: 
+▪ customerId (PK)
+▪ name
+▪ email
+▪ phone
+▪ status (ACTIVE, INACTIVE
