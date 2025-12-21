@@ -214,3 +214,236 @@ o Customer Entity
 ▪ email
 ▪ phone
 ▪ status (ACTIVE, INACTIVE
+
+
+
+बरं 👍
+आता exact “AddCustomer + UpdateCustomer + GetCustomerDetails” साठी proper, clean, interview-ready code देतो
+👉 ASP.NET Core MVC
+👉 In-memory data (DB शिवाय)
+👉 Service + Controller + Views (real MVC flow)
+📁 FINAL STRUCTURE
+Copy code
+
+Controllers
+ └── CustomerController.cs
+
+Models
+ └── Customer.cs
+
+Services
+ └── CustomerService.cs
+
+Views
+ └── Customer
+     ├── CustomerList.cshtml
+     ├── AddCustomer.cshtml
+     ├── UpdateCustomer.cshtml
+     └── CustomerDetails.cshtml
+1️⃣ Model – Customer
+📄 Models/Customer.cs
+Copy code
+Csharp
+namespace PackageFoodManagementSystem.Models
+{
+    public class Customer
+    {
+        public int CustomerId { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Status { get; set; } // ACTIVE / INACTIVE
+    }
+}
+2️⃣ Service Layer (IMPORTANT)
+📄 Services/CustomerService.cs
+Copy code
+Csharp
+using PackageFoodManagementSystem.Models;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace PackageFoodManagementSystem.Services
+{
+    public class CustomerService
+    {
+        private static List<Customer> customers = new List<Customer>()
+        {
+            new Customer{ CustomerId=1, Name="Anurag Jadhav", Email="anurag@gmail.com", Phone="9876543210", Status="ACTIVE"},
+            new Customer{ CustomerId=2, Name="Rahul Patil", Email="rahul@gmail.com", Phone="9123456789", Status="INACTIVE"}
+        };
+
+        // ADD
+        public void AddCustomer(Customer customer)
+        {
+            customer.CustomerId = customers.Count + 1;
+            customers.Add(customer);
+        }
+
+        // GET ALL
+        public List<Customer> GetAllCustomers()
+        {
+            return customers;
+        }
+
+        // GET BY ID
+        public Customer GetCustomerDetails(int id)
+        {
+            return customers.FirstOrDefault(c => c.CustomerId == id);
+        }
+
+        // UPDATE
+        public void UpdateCustomer(Customer customer)
+        {
+            var existing = customers.FirstOrDefault(c => c.CustomerId == customer.CustomerId);
+            if (existing != null)
+            {
+                existing.Name = customer.Name;
+                existing.Email = customer.Email;
+                existing.Phone = customer.Phone;
+                existing.Status = customer.Status;
+            }
+        }
+    }
+}
+🗣️ Viva line:
+“CustomerService handles customer lifecycle operations.”
+3️⃣ Controller
+📄 Controllers/CustomerController.cs
+Copy code
+Csharp
+using Microsoft.AspNetCore.Mvc;
+using PackageFoodManagementSystem.Models;
+using PackageFoodManagementSystem.Services;
+
+namespace PackageFoodManagementSystem.Controllers
+{
+    public class CustomerController : Controller
+    {
+        private CustomerService service = new CustomerService();
+
+        // LIST
+        public IActionResult CustomerList()
+        {
+            return View(service.GetAllCustomers());
+        }
+
+        // ADD
+        [HttpGet]
+        public IActionResult AddCustomer()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddCustomer(Customer customer)
+        {
+            service.AddCustomer(customer);
+            return RedirectToAction("CustomerList");
+        }
+
+        // DETAILS
+        public IActionResult CustomerDetails(int id)
+        {
+            return View(service.GetCustomerDetails(id));
+        }
+
+        // UPDATE
+        [HttpGet]
+        public IActionResult UpdateCustomer(int id)
+        {
+            return View(service.GetCustomerDetails(id));
+        }
+
+        [HttpPost]
+        public IActionResult UpdateCustomer(Customer customer)
+        {
+            service.UpdateCustomer(customer);
+            return RedirectToAction("CustomerList");
+        }
+    }
+}
+4️⃣ Views
+📄 CustomerList.cshtml
+Copy code
+Html
+@model List<PackageFoodManagementSystem.Models.Customer>
+
+<h3>Customer List</h3>
+<a asp-action="AddCustomer" class="btn btn-primary mb-2">Add Customer</a>
+
+<table class="table table-bordered">
+<tr>
+    <th>ID</th><th>Name</th><th>Email</th><th>Actions</th>
+</tr>
+
+@foreach (var c in Model)
+{
+<tr>
+    <td>@c.CustomerId</td>
+    <td>@c.Name</td>
+    <td>@c.Email</td>
+    <td>
+        <a asp-action="CustomerDetails" asp-route-id="@c.CustomerId" class="btn btn-info btn-sm">View</a>
+        <a asp-action="UpdateCustomer" asp-route-id="@c.CustomerId" class="btn btn-warning btn-sm">Edit</a>
+    </td>
+</tr>
+}
+</table>
+📄 AddCustomer.cshtml
+Copy code
+Html
+@model PackageFoodManagementSystem.Models.Customer
+
+<h3>Add Customer</h3>
+
+<form asp-action="AddCustomer" method="post">
+    <input asp-for="Name" class="form-control mb-2" placeholder="Name"/>
+    <input asp-for="Email" class="form-control mb-2" placeholder="Email"/>
+    <input asp-for="Phone" class="form-control mb-2" placeholder="Phone"/>
+    <select asp-for="Status" class="form-control mb-2">
+        <option>ACTIVE</option>
+        <option>INACTIVE</option>
+    </select>
+    <button class="btn btn-success">Save</button>
+</form>
+📄 UpdateCustomer.cshtml
+Copy code
+Html
+@model PackageFoodManagementSystem.Models.Customer
+
+<h3>Update Customer</h3>
+
+<form asp-action="UpdateCustomer" method="post">
+    <input type="hidden" asp-for="CustomerId" />
+    <input asp-for="Name" class="form-control mb-2"/>
+    <input asp-for="Email" class="form-control mb-2"/>
+    <input asp-for="Phone" class="form-control mb-2"/>
+    <select asp-for="Status" class="form-control mb-2">
+        <option>ACTIVE</option>
+        <option>INACTIVE</option>
+    </select>
+    <button class="btn btn-primary">Update</button>
+</form>
+📄 CustomerDetails.cshtml
+Copy code
+Html
+@model PackageFoodManagementSystem.Models.Customer
+
+<h3>Customer Details</h3>
+<p><b>Name:</b> @Model.Name</p>
+<p><b>Email:</b> @Model.Email</p>
+<p><b>Phone:</b> @Model.Phone</p>
+<p><b>Status:</b> @Model.Status</p>
+
+<a asp-action="CustomerList" class="btn btn-secondary">Back</a>
+🎯 FINAL (Interview Line)
+“CustomerController exposes add, update and get operations.
+CustomerService manages business logic.
+Currently data is stored in memory and can be replaced with database easily.”
+जर हवं असेल तर पुढे:
+✅ SQL + EF Core
+✅ Delete Customer
+✅ Project documentation
+✅ Viva short notes
+फक्त सांग 🔥
