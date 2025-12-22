@@ -1,5 +1,243 @@
-        public IActionResult UpdateCustomer(Customer customer)
-        {
+
+FOLDER STRUCTURE (IMPORTANT)
+Copy code
+
+Views
+ ├── Shared
+ │    ├── _Header.cshtml
+ │    ├── _Footer.cshtml
+ │    └── _Layout.cshtml
+ │
+ └── Customer
+      └── Dashboard.cshtml
+
+wwwroot
+ └── css
+      └── site.css
+🟢 1️⃣ HEADER (Separate)
+📄 Views/Shared/_Header.cshtml
+Copy code
+Html
+<nav class="navbar navbar-expand-lg app-header">
+    <div class="container-fluid">
+        <a class="navbar-brand text-white fw-bold" href="#">AlwaysFresh</a>
+
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menu">
+            <ul class="navbar-nav ms-4">
+                <li class="nav-item"><a class="nav-link text-white">Home</a></li>
+                <li class="nav-item"><a class="nav-link text-white">About Us</a></li>
+                <li class="nav-item"><a class="nav-link text-white">Categories</a></li>
+            </ul>
+
+            <div class="ms-auto d-flex align-items-center">
+                <span class="location">📍 Pune</span>
+                <div class="profile-circle">U</div>
+            </div>
+        </div>
+    </div>
+</nav>
+🟢 2️⃣ FOOTER (Separate)
+📄 Views/Shared/_Footer.cshtml
+Copy code
+Html
+<footer class="app-footer">
+    <div class="container text-center">
+        <p class="mb-1">© 2025 AlwaysFresh</p>
+        <small>Fresh groceries delivered fast</small>
+    </div>
+</footer>
+🟢 3️⃣ LAYOUT (Common)
+📄 Views/Shared/_Layout.cshtml
+Copy code
+Html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AlwaysFresh</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+<body>
+
+    @Html.Partial("_Header")
+
+    <main class="container-fluid mt-4">
+        @RenderBody()
+    </main>
+
+    @Html.Partial("_Footer")
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+🟢 4️⃣ CUSTOMER DASHBOARD (Separate Page)
+📄 Views/Customer/Dashboard.cshtml
+Copy code
+Html
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="dashboard">
+
+    <!-- QUOTE SECTION -->
+    <div class="quote-box">
+        <h2>Delivery in 20 Minutes 🚀</h2>
+        <p>Fresh • Fast • Reliable</p>
+    </div>
+
+    <!-- CATEGORY CARDS -->
+    <h4 class="section-title">Shop by Category</h4>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card category-card">
+                <h6>Vegetables & Fruits</h6>
+                <button class="btn btn-sm btn-success mt-2">Explore</button>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card category-card">
+                <h6>Dairy & Bakery</h6>
+                <button class="btn btn-sm btn-success mt-2">Explore</button>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card category-card">
+                <h6>Snacks & Drinks</h6>
+                <button class="btn btn-sm btn-success mt-2">Explore</button>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card category-card add-card">
+                <h2>+</h2>
+                <p>Add New Item</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="payment-section">
+        <h4>Payment Options</h4>
+        <div class="payment-box">UPI</div>
+        <div class="payment-box">Card</div>
+        <div class="payment-box">Cash on Delivery</div>
+    </div>
+
+</div>
+🟢 5️⃣ THEME CSS (Blinkit-like)
+📄 wwwroot/css/site.css
+Copy code
+Css
+body {
+    background: #f3f7f4;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* HEADER */
+.app-header {
+    background: #0c831f;
+    padding: 12px;
+}
+
+.location {
+    color: white;
+    margin-right: 15px;
+}
+
+.profile-circle {
+    width: 35px;
+    height: 35px;
+    background: white;
+    color: #0c831f;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* DASHBOARD */
+.quote-box {
+    background: linear-gradient(to right, #0c831f, #1ea44a);
+    color: white;
+    padding: 30px;
+    border-radius: 14px;
+    margin-bottom: 25px;
+}
+
+.section-title {
+    margin-bottom: 15px;
+}
+
+.category-card {
+    padding: 25px;
+    border-radius: 14px;
+    text-align: center;
+    border: none;
+}
+
+.add-card {
+    border: 2px dashed #0c831f;
+    color: #0c831f;
+    background: transparent;
+}
+
+/* PAYMENT */
+.payment-section {
+    margin-top: 40px;
+}
+
+.payment-box {
+    display: inline-block;
+    padding: 15px 25px;
+    background: white;
+    border-radius: 12px;
+    margin-right: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* FOOTER */
+.app-footer {
+    background: #0c831f;
+    color: white;
+    padding: 15px;
+    margin-top: 50px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public IActionResult UpdateCustomer(Customer customer)
+   
+
+
+
+{
             service.UpdateCustomer(customer);
             return RedirectToAction("CustomerList");
         }
