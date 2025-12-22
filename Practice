@@ -1,57 +1,171 @@
 
-FOLDER STRUCTURE (IMPORTANT)
+Perfect 👍
+I’ll give you WORKING FULL STARTER PROJECT CODE for ASP.NET MVC (Visual Studio) for your AlwaysFresh – Package Food Management System, Blinkit-style flow, NO React, HTML + CSS + Bootstrap + C#.
+⚠️ This is clean, structured, and expandable (college + company ready).
+You can directly paste files into Visual Studio.
+🔹 STEP 1: Create Project in Visual Studio
+Open Visual Studio
+Create New Project
+Select ASP.NET Web Application
+Project Name:
 Copy code
 
-Views
- ├── Shared
- │    ├── _Header.cshtml
- │    ├── _Footer.cshtml
- │    └── _Layout.cshtml
- │
- └── Customer
-      └── Dashboard.cshtml
-
-wwwroot
- └── css
-      └── site.css
-🟢 1️⃣ HEADER (Separate)
-📄 Views/Shared/_Header.cshtml
+AlwaysFresh
+Select MVC
+Authentication: No Authentication
+Click Create
+🔹 STEP 2: Folder Structure (Important)
 Copy code
-Html
-<nav class="navbar navbar-expand-lg app-header">
-    <div class="container-fluid">
-        <a class="navbar-brand text-white fw-bold" href="#">AlwaysFresh</a>
 
-        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="menu">
-            <ul class="navbar-nav ms-4">
-                <li class="nav-item"><a class="nav-link text-white">Home</a></li>
-                <li class="nav-item"><a class="nav-link text-white">About Us</a></li>
-                <li class="nav-item"><a class="nav-link text-white">Categories</a></li>
-            </ul>
-
-            <div class="ms-auto d-flex align-items-center">
-                <span class="location">📍 Pune</span>
-                <div class="profile-circle">U</div>
-            </div>
-        </div>
-    </div>
-</nav>
-🟢 2️⃣ FOOTER (Separate)
-📄 Views/Shared/_Footer.cshtml
+AlwaysFresh
+│
+├── Controllers
+│   ├── HomeController.cs
+│   ├── CartController.cs
+│   ├── OrderController.cs
+│
+├── Models
+│   ├── MenuItem.cs
+│   ├── CartItem.cs
+│   ├── Order.cs
+│
+├── Views
+│   ├── Home
+│   │   ├── Index.cshtml
+│   │
+│   ├── Cart
+│   │   ├── Index.cshtml
+│   │
+│   ├── Order
+│   │   ├── Payment.cshtml
+│   │   ├── Success.cshtml
+│   │
+│   ├── Shared
+│   │   ├── _Layout.cshtml
+│
+├── Content
+│   ├── site.css
+🔹 STEP 3: Models (C#)
+📌 Models/MenuItem.cs
 Copy code
-Html
-<footer class="app-footer">
-    <div class="container text-center">
-        <p class="mb-1">© 2025 AlwaysFresh</p>
-        <small>Fresh groceries delivered fast</small>
-    </div>
-</footer>
-🟢 3️⃣ LAYOUT (Common)
-📄 Views/Shared/_Layout.cshtml
+Csharp
+namespace AlwaysFresh.Models
+{
+    public class MenuItem
+    {
+        public int Id { get; set; }
+        public string FoodName { get; set; }
+        public int Price { get; set; }
+        public string ImageUrl { get; set; }
+    }
+}
+📌 Models/CartItem.cs
+Copy code
+Csharp
+namespace AlwaysFresh.Models
+{
+    public class CartItem
+    {
+        public MenuItem Item { get; set; }
+        public int Quantity { get; set; }
+    }
+}
+📌 Models/Order.cs
+Copy code
+Csharp
+namespace AlwaysFresh.Models
+{
+    public class Order
+    {
+        public int OrderId { get; set; }
+        public string PaymentMode { get; set; }
+        public int TotalAmount { get; set; }
+    }
+}
+🔹 STEP 4: Controllers
+📌 Controllers/HomeController.cs
+Copy code
+Csharp
+using AlwaysFresh.Models;
+using System.Collections.Generic;
+using System.Web.Mvc;
+
+namespace AlwaysFresh.Controllers
+{
+    public class HomeController : Controller
+    {
+        public ActionResult Index()
+        {
+            var menu = new List<MenuItem>
+            {
+                new MenuItem{Id=1,FoodName="Veg Thali",Price=120,ImageUrl="/Content/veg.jpg"},
+                new MenuItem{Id=2,FoodName="Paneer Masala",Price=150,ImageUrl="/Content/paneer.jpg"},
+                new MenuItem{Id=3,FoodName="Dal Rice",Price=100,ImageUrl="/Content/dal.jpg"}
+            };
+            return View(menu);
+        }
+    }
+}
+📌 Controllers/CartController.cs
+Copy code
+Csharp
+using AlwaysFresh.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+
+namespace AlwaysFresh.Controllers
+{
+    public class CartController : Controller
+    {
+        static List<CartItem> cart = new List<CartItem>();
+
+        public ActionResult Index()
+        {
+            return View(cart);
+        }
+
+        public ActionResult Add(int id, string name, int price)
+        {
+            var item = cart.FirstOrDefault(c => c.Item.Id == id);
+            if (item == null)
+            {
+                cart.Add(new CartItem
+                {
+                    Item = new MenuItem { Id = id, FoodName = name, Price = price },
+                    Quantity = 1
+                });
+            }
+            else
+            {
+                item.Quantity++;
+            }
+            return RedirectToAction("Index");
+        }
+    }
+}
+📌 Controllers/OrderController.cs
+Copy code
+Csharp
+using System.Web.Mvc;
+
+namespace AlwaysFresh.Controllers
+{
+    public class OrderController : Controller
+    {
+        public ActionResult Payment()
+        {
+            return View();
+        }
+
+        public ActionResult Success()
+        {
+            return View();
+        }
+    }
+}
+🔹 STEP 5: Layout (Navbar + Profile)
+📌 Views/Shared/_Layout.cshtml
 Copy code
 Html
 <!DOCTYPE html>
@@ -59,350 +173,25 @@ Html
 <head>
     <title>AlwaysFresh</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/css/site.css" rel="stylesheet" />
 </head>
 <body>
 
-    @Html.Partial("_Header")
-
-    <main class="container-fluid mt-4">
-        @RenderBody()
-    </main>
-
-    @Html.Partial("_Footer")
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-🟢 4️⃣ CUSTOMER DASHBOARD (Separate Page)
-📄 Views/Customer/Dashboard.cshtml
-Copy code
-Html
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-
-<div class="dashboard">
-
-    <!-- QUOTE SECTION -->
-    <div class="quote-box">
-        <h2>Delivery in 20 Minutes 🚀</h2>
-        <p>Fresh • Fast • Reliable</p>
-    </div>
-
-    <!-- CATEGORY CARDS -->
-    <h4 class="section-title">Shop by Category</h4>
-
-    <div class="row g-3">
-        <div class="col-md-3">
-            <div class="card category-card">
-                <h6>Vegetables & Fruits</h6>
-                <button class="btn btn-sm btn-success mt-2">Explore</button>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card category-card">
-                <h6>Dairy & Bakery</h6>
-                <button class="btn btn-sm btn-success mt-2">Explore</button>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card category-card">
-                <h6>Snacks & Drinks</h6>
-                <button class="btn btn-sm btn-success mt-2">Explore</button>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card category-card add-card">
-                <h2>+</h2>
-                <p>Add New Item</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- PAYMENT -->
-    <div class="payment-section">
-        <h4>Payment Options</h4>
-        <div class="payment-box">UPI</div>
-        <div class="payment-box">Card</div>
-        <div class="payment-box">Cash on Delivery</div>
-    </div>
-
-</div>
-🟢 5️⃣ THEME CSS (Blinkit-like)
-📄 wwwroot/css/site.css
-Copy code
-Css
-body {
-    background: #f3f7f4;
-    font-family: 'Segoe UI', sans-serif;
-}
-
-/* HEADER */
-.app-header {
-    background: #0c831f;
-    padding: 12px;
-}
-
-.location {
-    color: white;
-    margin-right: 15px;
-}
-
-.profile-circle {
-    width: 35px;
-    height: 35px;
-    background: white;
-    color: #0c831f;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-/* DASHBOARD */
-.quote-box {
-    background: linear-gradient(to right, #0c831f, #1ea44a);
-    color: white;
-    padding: 30px;
-    border-radius: 14px;
-    margin-bottom: 25px;
-}
-
-.section-title {
-    margin-bottom: 15px;
-}
-
-.category-card {
-    padding: 25px;
-    border-radius: 14px;
-    text-align: center;
-    border: none;
-}
-
-.add-card {
-    border: 2px dashed #0c831f;
-    color: #0c831f;
-    background: transparent;
-}
-
-/* PAYMENT */
-.payment-section {
-    margin-top: 40px;
-}
-
-.payment-box {
-    display: inline-block;
-    padding: 15px 25px;
-    background: white;
-    border-radius: 12px;
-    margin-right: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* FOOTER */
-.app-footer {
-    background: #0c831f;
-    color: white;
-    padding: 15px;
-    margin-top: 50px;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-public IActionResult UpdateCustomer(Customer customer)
-   
-
-
-
-{
-            service.UpdateCustomer(customer);
-            return RedirectToAction("CustomerList");
-        }
-    }
-}
-4️⃣ Views
-📄 CustomerList.cshtml
-Copy code
-Html
-@model List<PackageFoodManagementSystem.Models.Customer>
-
-<h3>Customer List</h3>
-<a asp-action="AddCustomer" class="btn btn-primary mb-2">Add Customer</a>
-
-<table class="table table-bordered">
-<tr>
-    <th>ID</th><th>Name</th><th>Email</th><th>Actions</th>
-</tr>
-
-@foreach (var c in Model)
-{
-<tr>
-    <td>@c.CustomerId</td>
-    <td>@c.Name</td>
-    <td>@c.Email</td>
-    <td>
-        <a asp-action="CustomerDetails" asp-route-id="@c.CustomerId" class="btn btn-info btn-sm">View</a>
-        <a asp-action="UpdateCustomer" asp-route-id="@c.CustomerId" class="btn btn-warning btn-sm">Edit</a>
-    </td>
-</tr>
-}
-</table>
-📄 AddCustomer.cshtml
-Copy code
-Html
-@model PackageFoodManagementSystem.Models.Customer
-
-<h3>Add Customer</h3>
-
-<form asp-action="AddCustomer" method="post">
-    <input asp-for="Name" class="form-control mb-2" placeholder="Name"/>
-    <input asp-for="Email" class="form-control mb-2" placeholder="Email"/>
-    <input asp-for="Phone" class="form-control mb-2" placeholder="Phone"/>
-    <select asp-for="Status" class="form-control mb-2">
-        <option>ACTIVE</option>
-        <option>INACTIVE</option>
-    </select>
-    <button class="btn btn-success">Save</button>
-</form>
-📄 UpdateCustomer.cshtml
-Copy code
-Html
-@model PackageFoodManagementSystem.Models.Customer
-
-<h3>Update Customer</h3>
-
-<form asp-action="UpdateCustomer" method="post">
-    <input type="hidden" asp-for="CustomerId" />
-    <input asp-for="Name" class="form-control mb-2"/>
-    <input asp-for="Email" class="form-control mb-2"/>
-    <input asp-for="Phone" class="form-control mb-2"/>
-    <select asp-for="Status" class="form-control mb-2">
-        <option>ACTIVE</option>
-        <option>INACTIVE</option>
-    </select>
-    <button class="btn btn-primary">Update</button>
-</form>
-📄 CustomerDetails.cshtml
-Copy code
-Html
-@model PackageFoodManagementSystem.Models.Customer
-
-<h3>Customer Details</h3>
-<p><b>Name:</b> @Model.Name</p>
-<p><b>Email:</b> @Model.Email</p>
-<p><b>Phone:</b> @Model.Phone</p>
-<p><b>Status:</b> @Model.Status</p>
-
-<a asp-action="CustomerList" class="btn btn-secondary">Back</a>
-🎯 FINAL (Interview Line)
-“CustomerController exposes add, update and get operations.
-CustomerService manages business logic.
-Currently data is stored in memory and can be replaced with database easily.”
-जर हवं असेल तर पुढे:
-✅ SQL + EF Core
-✅ Delete Customer
-✅ Project documentation
-✅ Viva short notes
-फक्त सांग 🔥
-
-
-
-
-
-The user starts the journey on the login screen of the AlwaysFresh application, where they can either log in using their registered mobile number or email or create a new account through a simple registration process. After successful login, the user is redirected to the home dashboard, which is designed similar to a quick commerce app like Blinkit. The top navigation bar displays the application name on the left, a search bar in the center for quickly finding food packages, and icons for cart and user profile on the right side.
-On the left side of the screen, a vertical category panel is visible that allows users to browse different food and package categories such as All Packages, Veg Meals, Non-Veg Meals, Snacks, and Beverages. The main content area shows food packages in the form of cards with images, package name, price, and an “Add” button. When the user selects a package and clicks on the Add button, the item is added to the cart, and the cart icon updates accordingly.
-The user can click on the cart icon to navigate to the cart page, where all selected food packages are listed along with quantity and total price. From the cart page, the user proceeds to checkout, where delivery details are confirmed. After confirming the delivery information, the user is redirected to the payment page.
-On the payment screen, multiple payment options are displayed such as Cash on Delivery, UPI, and Card payment. The user selects a preferred payment method and completes the payment. Once the payment is successful, an order confirmation screen is shown with a success message indicating that the order has been placed successfully.
-Finally, the application displays a friendly thank-you message such as “Your order has been placed successfully. Thank you for choosing AlwaysFresh. Please visit again.” This completes the end-to-end quick commerce flow from login to payment, following a user experience similar to Blinkit.
-
-
-
-
-
-
-
-
-wwwroot/css/site.css
-Copy code
-Css
-body {
-    background-color: #f4f6f8;
-    font-family: 'Segoe UI', sans-serif;
-}
-
-.card {
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-
-.customer-img {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.navbar-brand {
-    font-weight: bold;
-    font-size: 22px;
-}
-
-.badge-active {
-    background-color: #28a745;
-}
-
-.badge-inactive {
-    background-color: #dc3545;
-}
-✅ 2️⃣ Blinkit-Style Layout (with icons)
-📄 Views/Shared/_Layout.cshtml
-Copy code
-Html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AlwaysFresh</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="~/css/site.css" />
-</head>
-
-<body>
-
-<nav class="navbar navbar-dark bg-success px-4">
-    <span class="navbar-brand">🥗 AlwaysFresh</span>
-
-    <div class="ms-auto d-flex align-items-center">
-        <i class="bi bi-person-circle text-white fs-4 me-3"></i>
-        <span class="text-white">Admin</span>
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+        <a class="navbar-brand" href="/">AlwaysFresh</a>
+
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Cart">Cart</a></li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Profile</a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item">My Orders</a></li>
+                    <li><a class="dropdown-item">Wallet</a></li>
+                    <li><a class="dropdown-item">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
     </div>
 </nav>
 
@@ -410,282 +199,108 @@ Html
     @RenderBody()
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-✅ 3️⃣ Customer List (Image + Card Style)
-📄 Views/Customer/CustomerList.cshtml
+🔹 STEP 6: Dashboard UI
+📌 Views/Home/Index.cshtml
 Copy code
 Html
-@model List<AlwaysFresh.Models.Customer>
+@model List<AlwaysFresh.Models.MenuItem>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>👥 Customer Management</h4>
-    <a asp-action="AddCustomer" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Add Customer
-    </a>
+<div class="text-center">
+    <img src="/Content/banner.jpg" class="img-fluid" />
+    <h3 class="mt-3">"Fresh food delivered with love"</h3>
+    <a href="#menu" class="btn btn-success mt-2">Explore Our Menu</a>
 </div>
 
-<div class="card p-3">
-<table class="table align-middle">
-    <thead>
-        <tr>
-            <th>Profile</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
+<hr />
 
-<tbody>
-@foreach (var c in Model)
+<div id="menu" class="row">
+@foreach (var item in Model)
+{
+    <div class="col-md-4">
+        <div class="card mt-3">
+            <img src="@item.ImageUrl" class="card-img-top" />
+            <div class="card-body text-center">
+                <h5>@item.FoodName</h5>
+                <p>₹@item.Price</p>
+                <a href="/Cart/Add?id=@item.Id&name=@item.FoodName&price=@item.Price"
+                   class="btn btn-success">+</a>
+            </div>
+        </div>
+    </div>
+}
+</div>
+🔹 STEP 7: Cart Page
+📌 Views/Cart/Index.cshtml
+Copy code
+Html
+@model List<AlwaysFresh.Models.CartItem>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>My Cart</h2>
+
+<table class="table">
+    <tr>
+        <th>Food</th>
+        <th>Qty</th>
+        <th>Price</th>
+    </tr>
+
+@foreach (var item in Model)
 {
     <tr>
-        <td>
-            <img src="https://randomuser.me/api/portraits/men/@c.CustomerId.jpg"
-                 class="customer-img" />
-        </td>
-        <td>@c.Name</td>
-        <td>@c.Email</td>
-        <td>
-            @if (c.Status == "ACTIVE")
-            {
-                <span class="badge badge-active">ACTIVE</span>
-            }
-            else
-            {
-                <span class="badge badge-inactive">INACTIVE</span>
-            }
-        </td>
-        <td>
-            <a asp-action="CustomerDetails" asp-route-id="@c.CustomerId" class="btn btn-sm btn-outline-info">
-                <i class="bi bi-eye"></i>
-            </a>
-            <a asp-action="UpdateCustomer" asp-route-id="@c.CustomerId" class="btn btn-sm btn-outline-warning">
-                <i class="bi bi-pencil"></i>
-            </a>
-        </td>
+        <td>@item.Item.FoodName</td>
+        <td>@item.Quantity</td>
+        <td>₹@(item.Quantity * item.Item.Price)</td>
     </tr>
 }
-</tbody>
 </table>
-</div>
-✅ 4️⃣ Add Customer (Card + Icons)
-📄 Views/Customer/AddCustomer.cshtml
-Copy code
-Html
-@model AlwaysFresh.Models.Customer
 
-<div class="card p-4 w-50 mx-auto">
-    <h4 class="mb-3">➕ Add Customer</h4>
-
-    <form method="post">
-        <input asp-for="Name" class="form-control mb-3" placeholder="👤 Customer Name" />
-        <input asp-for="Email" class="form-control mb-3" placeholder="📧 Email" />
-        <input asp-for="Phone" class="form-control mb-3" placeholder="📞 Phone" />
-
-        <select asp-for="Status" class="form-control mb-3">
-            <option>ACTIVE</option>
-            <option>INACTIVE</option>
-        </select>
-
-        <button class="btn btn-success w-100">Save Customer</button>
-    </form>
-</div>
-✅ 5️⃣ Customer Details (Profile Look)
-📄 Views/Customer/CustomerDetails.cshtml
-Copy code
-Html
-@model AlwaysFresh.Models.Customer
-
-<div class="card p-4 w-50 mx-auto text-center">
-    <img src="https://randomuser.me/api/portraits/men/@Model.CustomerId.jpg"
-         class="customer-img mb-3" style="width:80px;height:80px;" />
-
-    <h5>@Model.Name</h5>
-    <p>@Model.Email</p>
-    <p>@Model.Phone</p>
-
-    <span class="badge bg-success">@Model.Status</span>
-
-    <br /><br />
-    <a asp-action="CustomerList" class="btn btn-secondary">Back</a>
-</div>
-
-
-
-
-
-
-
-
-
-Views/Customer/Dashboard.cshtml
+<a href="/Order/Payment" class="btn btn-success">Proceed to Payment</a>
+🔹 STEP 8: Payment Page
+📌 Views/Order/Payment.cshtml
 Copy code
 Html
 @{
-    ViewData["Title"] = "AlwaysFresh - Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<link rel="stylesheet" href="~/css/site.css" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<h3>Select Payment Method</h3>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4">
-    <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="~/images/logo.png" class="logo" />
-        <b>AlwaysFresh</b>
-    </a>
-
-    <ul class="navbar-nav mx-auto">
-        <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">About Us</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Categories</a></li>
-    </ul>
-
-    <div class="profile">
-        <img src="~/images/location.png" />
-        <span>Pune</span>
-        <img src="~/images/user.png" class="profile-img" />
-    </div>
-</nav>
-
-<!-- HERO SECTION -->
-<div class="hero">
-    <img src="~/images/banner.jpg" />
-    <div class="hero-text">
-        <h2>Groceries delivered in 20 minutes</h2>
-        <p>Fresh • Fast • Reliable</p>
-    </div>
-</div>
-
-<!-- QUOTE SECTION -->
-<div class="quote-section">
-    <img src="~/images/quote.png" />
-    <h4>“Fresh food is the foundation of a healthy life.”</h4>
-</div>
-
-<!-- CATEGORY CARDS -->
-<div class="container mt-4">
-    <h4 class="mb-3">Shop by Category</h4>
-
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card category-card">
-                <img src="~/images/veg.jpg" />
-                <h5>Vegetables & Fruits</h5>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card category-card">
-                <img src="~/images/grocery.jpg" />
-                <h5>Grocery & Staples</h5>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card category-card">
-                <img src="~/images/dairy.jpg" />
-                <h5>Dairy & Bakery</h5>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADD PRODUCT OPTION -->
-<div class="add-section">
-    <button class="btn btn-success add-btn">+ Add Items to Cart</button>
-</div>
-
-<!-- PAYMENT OPTIONS -->
-<div class="container mt-5">
-    <h4>Payment Options</h4>
-    <div class="payment">
-        <img src="~/images/upi.png" />
-        <img src="~/images/card.png" />
-        <img src="~/images/cod.png" />
-    </div>
-</div>
-🎨 CSS (LOOK & FEEL)
-📄 wwwroot/css/site.css
+<form action="/Order/Success">
+    <input type="radio" name="pay" /> Cash on Delivery <br />
+    <input type="radio" name="pay" /> Pay Online <br /><br />
+    <button class="btn btn-success">Proceed to Payment</button>
+</form>
+📌 Views/Order/Success.cshtml
 Copy code
-Css
-body {
-    font-family: Arial, sans-serif;
-    background: #f6f6f6;
+Html
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-.logo {
-    width: 35px;
-    margin-right: 10px;
-}
-
-.profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.profile-img {
-    width: 35px;
-    border-radius: 50%;
-}
-
-.hero {
-    position: relative;
-}
-
-.hero img {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-}
-
-.hero-text {
-    position: absolute;
-    bottom: 30px;
-    left: 30px;
-    color: white;
-}
-
-.quote-section {
-    text-align: center;
-    margin: 40px 0;
-}
-
-.quote-section img {
-    width: 80px;
-}
-
-.category-card {
-    text-align: center;
-    padding: 15px;
-    border-radius: 15px;
-}
-
-.category-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-}
-
-.add-section {
-    text-align: center;
-    margin: 40px;
-}
-
-.add-btn {
-    font-size: 20px;
-    padding: 10px 30px;
-}
-
-.payment img {
-    width: 80px;
-    margin-right: 20px;
-}
-
-
-
-
-https://chatgpt.com/share/6948c592-4784-800c-948e-88df38aae648
+<h2 class="text-success">✅ Order Placed Successfully!</h2>
+<p>Thank you for ordering from AlwaysFresh.</p>
+✅ RESULT (Exactly What You Asked)
+✔ Blinkit-style dashboard
+✔ Navbar with Home, Cart, Profile
+✔ Quote + Image
+✔ Menu with + button
+✔ Cart → Payment → Success
+✔ Profile with My Orders & Wallet
+✔ Fully ASP.NET MVC
+✔ Runs in Visual Studio
+🔥 NEXT UPGRADE (Tell me what you want next)
+1️⃣ SQL Server database
+2️⃣ Login / Register
+3️⃣ Wallet logic
+4️⃣ Admin panel
+5️⃣ UI animation like Blinkit
+Just tell me next step 💪
