@@ -1,306 +1,330 @@
-
 Perfect 👍
-I’ll give you WORKING FULL STARTER PROJECT CODE for ASP.NET MVC (Visual Studio) for your AlwaysFresh – Package Food Management System, Blinkit-style flow, NO React, HTML + CSS + Bootstrap + C#.
-⚠️ This is clean, structured, and expandable (college + company ready).
-You can directly paste files into Visual Studio.
-🔹 STEP 1: Create Project in Visual Studio
+Now I’ll give you FROM SCRATCH → END, CLEAR STEP-BY-STEP, with FULL CODE, so you can copy-paste and run in Visual Studio without confusion.
+Project: AlwayzzzFresh
+Tech: ASP.NET Core MVC + HTML + CSS + Bootstrap
+Goal: Blinkit-like grocery app UI + cart
+🔰 STEP 1: Create Project (STARTING POINT)
 Open Visual Studio
-Create New Project
-Select ASP.NET Web Application
-Project Name:
+Click Create a new project
+Select ASP.NET Core Web App (Model-View-Controller)
+Click Next
+Project Details
+Project name: AlwayzzzFresh
+Framework: .NET 6 or .NET 7
+Authentication: None
+Click Create ✅
+Run once (Ctrl + F5) → default page should open.
+🔰 STEP 2: Project Structure (VERY IMPORTANT)
+After creation, your structure should be:
 Copy code
 
-AlwaysFresh
-Select MVC
-Authentication: No Authentication
-Click Create
-🔹 STEP 2: Folder Structure (Important)
-Copy code
-
-AlwaysFresh
+AlwayzzzFresh
 │
 ├── Controllers
-│   ├── HomeController.cs
-│   ├── CartController.cs
-│   ├── OrderController.cs
-│
 ├── Models
-│   ├── MenuItem.cs
-│   ├── CartItem.cs
-│   ├── Order.cs
-│
 ├── Views
 │   ├── Home
-│   │   ├── Index.cshtml
-│   │
-│   ├── Cart
-│   │   ├── Index.cshtml
-│   │
-│   ├── Order
-│   │   ├── Payment.cshtml
-│   │   ├── Success.cshtml
-│   │
 │   ├── Shared
-│   │   ├── _Layout.cshtml
-│
-├── Content
-│   ├── site.css
-🔹 STEP 3: Models (C#)
-📌 Models/MenuItem.cs
+├── wwwroot
+│   ├── css
+│   ├── images
+🔰 STEP 3: Enable SESSION (For Cart)
+Open: Program.cs
+Add this line before builder.Build():
 Copy code
 Csharp
-namespace AlwaysFresh.Models
+builder.Services.AddSession();
+Add this line after app.UseStaticFiles();
+Copy code
+Csharp
+app.UseSession();
+Final order must be 👇
+Copy code
+Csharp
+app.UseStaticFiles();
+app.UseRouting();
+app.UseSession();
+app.UseAuthorization();
+Run again → no error ✅
+🔰 STEP 4: Create MODELS
+📁 Models/Product.cs
+Copy code
+Csharp
+namespace AlwayzzzFresh.Models
 {
-    public class MenuItem
+    public class Product
     {
         public int Id { get; set; }
-        public string FoodName { get; set; }
-        public int Price { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
         public string ImageUrl { get; set; }
     }
 }
-📌 Models/CartItem.cs
+📁 Models/CartItem.cs
 Copy code
 Csharp
-namespace AlwaysFresh.Models
+namespace AlwayzzzFresh.Models
 {
     public class CartItem
     {
-        public MenuItem Item { get; set; }
+        public Product Product { get; set; }
         public int Quantity { get; set; }
     }
 }
-📌 Models/Order.cs
+🔰 STEP 5: Add Images
+Go to:
 Copy code
-Csharp
-namespace AlwaysFresh.Models
-{
-    public class Order
-    {
-        public int OrderId { get; set; }
-        public string PaymentMode { get; set; }
-        public int TotalAmount { get; set; }
-    }
-}
-🔹 STEP 4: Controllers
-📌 Controllers/HomeController.cs
-Copy code
-Csharp
-using AlwaysFresh.Models;
-using System.Collections.Generic;
-using System.Web.Mvc;
 
-namespace AlwaysFresh.Controllers
+wwwroot/images
+Add 3 images:
+apple.png
+milk.png
+bread.png
+(Any grocery images are fine)
+🔰 STEP 6: Home Controller (Product List)
+📁 Controllers/HomeController.cs
+Copy code
+Csharp
+using Microsoft.AspNetCore.Mvc;
+using AlwayzzzFresh.Models;
+using System.Collections.Generic;
+
+namespace AlwayzzzFresh.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Index()
+        public IActionResult Index()
         {
-            var menu = new List<MenuItem>
+            var products = new List<Product>
             {
-                new MenuItem{Id=1,FoodName="Veg Thali",Price=120,ImageUrl="/Content/veg.jpg"},
-                new MenuItem{Id=2,FoodName="Paneer Masala",Price=150,ImageUrl="/Content/paneer.jpg"},
-                new MenuItem{Id=3,FoodName="Dal Rice",Price=100,ImageUrl="/Content/dal.jpg"}
+                new Product { Id=1, Name="Fresh Apples", Price=120, ImageUrl="/images/apple.png" },
+                new Product { Id=2, Name="Milk Packet", Price=55, ImageUrl="/images/milk.png" },
+                new Product { Id=3, Name="Bread", Price=40, ImageUrl="/images/bread.png" }
             };
-            return View(menu);
+
+            return View(products);
         }
     }
 }
-📌 Controllers/CartController.cs
-Copy code
-Csharp
-using AlwaysFresh.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Mvc;
-
-namespace AlwaysFresh.Controllers
-{
-    public class CartController : Controller
-    {
-        static List<CartItem> cart = new List<CartItem>();
-
-        public ActionResult Index()
-        {
-            return View(cart);
-        }
-
-        public ActionResult Add(int id, string name, int price)
-        {
-            var item = cart.FirstOrDefault(c => c.Item.Id == id);
-            if (item == null)
-            {
-                cart.Add(new CartItem
-                {
-                    Item = new MenuItem { Id = id, FoodName = name, Price = price },
-                    Quantity = 1
-                });
-            }
-            else
-            {
-                item.Quantity++;
-            }
-            return RedirectToAction("Index");
-        }
-    }
-}
-📌 Controllers/OrderController.cs
-Copy code
-Csharp
-using System.Web.Mvc;
-
-namespace AlwaysFresh.Controllers
-{
-    public class OrderController : Controller
-    {
-        public ActionResult Payment()
-        {
-            return View();
-        }
-
-        public ActionResult Success()
-        {
-            return View();
-        }
-    }
-}
-🔹 STEP 5: Layout (Navbar + Profile)
-📌 Views/Shared/_Layout.cshtml
+🔰 STEP 7: Layout (Blinkit-Style Navbar)
+📁 Views/Shared/_Layout.cshtml
+Replace FULL FILE:
 Copy code
 Html
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AlwaysFresh</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <title>AlwayzzzFresh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { padding-top: 80px; }
+        .product-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
+
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-success">
-    <div class="container">
-        <a class="navbar-brand" href="/">AlwaysFresh</a>
+<nav class="navbar fixed-top bg-success p-3">
+    <div class="container-fluid">
+        <span class="text-white fw-bold fs-4">AlwayzzzFresh</span>
 
-        <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="/Cart">Cart</a></li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Profile</a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item">My Orders</a></li>
-                    <li><a class="dropdown-item">Wallet</a></li>
-                    <li><a class="dropdown-item">Logout</a></li>
-                </ul>
-            </li>
-        </ul>
+        <input class="form-control w-50 ms-3"
+               placeholder="Search groceries..." />
+
+        <a href="/Cart" class="btn btn-light ms-3">🛒 Cart</a>
     </div>
 </nav>
 
-<div class="container mt-4">
+<div class="container">
     @RenderBody()
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-🔹 STEP 6: Dashboard UI
-📌 Views/Home/Index.cshtml
+🔰 STEP 8: Home View (Blinkit-Style Products)
+📁 Views/Home/Index.cshtml
 Copy code
 Html
-@model List<AlwaysFresh.Models.MenuItem>
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+@model List<AlwayzzzFresh.Models.Product>
 
-<div class="text-center">
-    <img src="/Content/banner.jpg" class="img-fluid" />
-    <h3 class="mt-3">"Fresh food delivered with love"</h3>
-    <a href="#menu" class="btn btn-success mt-2">Explore Our Menu</a>
-</div>
-
-<hr />
-
-<div id="menu" class="row">
+<div class="row">
 @foreach (var item in Model)
 {
-    <div class="col-md-4">
-        <div class="card mt-3">
-            <img src="@item.ImageUrl" class="card-img-top" />
-            <div class="card-body text-center">
-                <h5>@item.FoodName</h5>
-                <p>₹@item.Price</p>
-                <a href="/Cart/Add?id=@item.Id&name=@item.FoodName&price=@item.Price"
-                   class="btn btn-success">+</a>
+    <div class="col-6 col-md-3 mb-4">
+        <div class="card product-card">
+            <img src="@item.ImageUrl" class="card-img-top" height="140" />
+
+            <div class="card-body">
+                <small class="text-success">10 mins delivery</small>
+                <h6>@item.Name</h6>
+
+                <div class="d-flex justify-content-between">
+                    <span class="fw-bold">₹@item.Price</span>
+                    <a href="/Cart/Add/@item.Id"
+                       class="btn btn-success btn-sm">
+                        ADD
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 }
 </div>
-🔹 STEP 7: Cart Page
-📌 Views/Cart/Index.cshtml
+🔰 STEP 9: Cart Controller (REAL LOGIC)
+📁 Controllers/CartController.cs
 Copy code
-Html
-@model List<AlwaysFresh.Models.CartItem>
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+Csharp
+using Microsoft.AspNetCore.Mvc;
+using AlwayzzzFresh.Models;
+using System.Text.Json;
+using System.Collections.Generic;
+using System.Linq;
 
-<h2>My Cart</h2>
-
-<table class="table">
-    <tr>
-        <th>Food</th>
-        <th>Qty</th>
-        <th>Price</th>
-    </tr>
-
-@foreach (var item in Model)
+namespace AlwayzzzFresh.Controllers
 {
-    <tr>
-        <td>@item.Item.FoodName</td>
-        <td>@item.Quantity</td>
-        <td>₹@(item.Quantity * item.Item.Price)</td>
-    </tr>
-}
-</table>
+    public class CartController : Controller
+    {
+        private List<CartItem> GetCart()
+        {
+            var data = HttpContext.Session.GetString("cart");
+            return data == null ? new List<CartItem>() :
+                JsonSerializer.Deserialize<List<CartItem>>(data);
+        }
 
-<a href="/Order/Payment" class="btn btn-success">Proceed to Payment</a>
-🔹 STEP 8: Payment Page
-📌 Views/Order/Payment.cshtml
+        private void SaveCart(List<CartItem> cart)
+        {
+            HttpContext.Session.SetString("cart",
+                JsonSerializer.Serialize(cart));
+        }
+
+        public IActionResult Index()
+        {
+            return View(GetCart());
+        }
+
+        public IActionResult Add(int id)
+        {
+            var cart = GetCart();
+
+            var product = new Product
+            {
+                Id = id,
+                Name = id == 1 ? "Fresh Apples" :
+                       id == 2 ? "Milk Packet" : "Bread",
+                Price = id == 1 ? 120 :
+                        id == 2 ? 55 : 40,
+                ImageUrl = id == 1 ? "/images/apple.png" :
+                           id == 2 ? "/images/milk.png" : "/images/bread.png"
+            };
+
+            var item = cart.FirstOrDefault(x => x.Product.Id == id);
+
+            if (item == null)
+                cart.Add(new CartItem { Product = product, Quantity = 1 });
+            else
+                item.Quantity++;
+
+            SaveCart(cart);
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Remove(int id)
+        {
+            var cart = GetCart();
+            var item = cart.FirstOrDefault(x => x.Product.Id == id);
+
+            if (item != null)
+            {
+                item.Quantity--;
+                if (item.Quantity == 0)
+                    cart.Remove(item);
+            }
+
+            SaveCart(cart);
+            return RedirectToAction("Index");
+        }
+    }
+}
+🔰 STEP 10: Cart View
+📁 Views/Cart/Index.cshtml
 Copy code
 Html
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+@model List<AlwayzzzFresh.Models.CartItem>
+
+<h3>Your Cart 🛒</h3>
+
+@if (!Model.Any())
+{
+    <p>Cart is empty</p>
 }
+else
+{
+    <table class="table">
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Total</th>
+            <th></th>
+        </tr>
 
-<h3>Select Payment Method</h3>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Product.Name</td>
+                <td>@item.Quantity</td>
+                <td>₹@(item.Product.Price * item.Quantity)</td>
+                <td>
+                    <a href="/Cart/Add/@item.Product.Id" class="btn btn-success btn-sm">+</a>
+                    <a href="/Cart/Remove/@item.Product.Id" class="btn btn-danger btn-sm">-</a>
+                </td>
+            </tr>
+        }
+    </table>
 
-<form action="/Order/Success">
-    <input type="radio" name="pay" /> Cash on Delivery <br />
-    <input type="radio" name="pay" /> Pay Online <br /><br />
-    <button class="btn btn-success">Proceed to Payment</button>
-</form>
-📌 Views/Order/Success.cshtml
+    <a href="/Order/Checkout" class="btn btn-success">
+        Proceed to Payment
+    </a>
+}
+🔰 STEP 11: Payment Page
+📁 Controllers/OrderController.cs
+Copy code
+Csharp
+using Microsoft.AspNetCore.Mvc;
+
+namespace AlwayzzzFresh.Controllers
+{
+    public class OrderController : Controller
+    {
+        public IActionResult Checkout()
+        {
+            return View();
+        }
+    }
+}
+📁 Views/Order/Checkout.cshtml
 Copy code
 Html
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-
-<h2 class="text-success">✅ Order Placed Successfully!</h2>
-<p>Thank you for ordering from AlwaysFresh.</p>
-✅ RESULT (Exactly What You Asked)
-✔ Blinkit-style dashboard
-✔ Navbar with Home, Cart, Profile
-✔ Quote + Image
-✔ Menu with + button
-✔ Cart → Payment → Success
-✔ Profile with My Orders & Wallet
-✔ Fully ASP.NET MVC
+<h3>Payment</h3>
+<p>UPI / Cash on Delivery</p>
+<button class="btn btn-success">Place Order</button>
+✅ FINAL RESULT
 ✔ Runs in Visual Studio
-🔥 NEXT UPGRADE (Tell me what you want next)
-1️⃣ SQL Server database
-2️⃣ Login / Register
-3️⃣ Wallet logic
-4️⃣ Admin panel
-5️⃣ UI animation like Blinkit
-Just tell me next step 💪
+✔ Blinkit-like UI
+✔ Add to cart works
+✔ Quantity + / –
+✔ Session-based cart
+✔ Brand: AlwayzzzFresh
+🔥 NEXT (OPTIONAL UPGRADES)
+Say one word:
+SEARCH
+DATABASE
+LOGIN
+ADMIN PANEL
+EXACT BLINKIT UI
+I’ll continue step-by-step again 👍
