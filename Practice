@@ -1,248 +1,218 @@
-Perfect 👍 now it’s 100% clear.
-👉 FINAL REQUIREMENT (corrected):
-App opens Home page
-Only profile logo visible on top-right
-Click on profile logo → a menu opens (dropdown)
-→ shows:
-My Account
-My Basket
-My Orders
-My Wallet
-Contact Us
-Logout
-Nothing opens automatically
-Pages open only when menu items are clicked
-ASP.NET Core MVC + HTTPS localhost
-Below is FULL CODE – STEP BY STEP, clean and minimal.
-✅ STEP 1: Program.cs (ROUTING)
-📁 Program.cs
-Copy code
-Csharp
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddControllersWithViews();
-
-var app = builder.Build();
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
-✔ Home page opens first
-✔ No auto redirect to account
-✅ STEP 2: HOME CONTROLLER
-📁 Controllers/HomeController.cs
-Copy code
-Csharp
-using Microsoft.AspNetCore.Mvc;
-
-namespace PackageFoodManagementSystem.Application.Controllers
-{
-    public class HomeController : Controller
-    {
-        public IActionResult Index()
-        {
-            return View();
-        }
-    }
-}
-✅ STEP 3: ACCOUNT CONTROLLER (ALL MENU PAGES)
-📁 Controllers/AccountController.cs
-Copy code
-Csharp
-using Microsoft.AspNetCore.Mvc;
-
-namespace PackageFoodManagementSystem.Application.Controllers
-{
-    public class AccountController : Controller
-    {
-        public IActionResult MyAccount()
-        {
-            return View();
-        }
-
-        public IActionResult MyBasket()
-        {
-            return View();
-        }
-
-        public IActionResult MyOrders()
-        {
-            return View();
-        }
-
-        public IActionResult MyWallet()
-        {
-            return View();
-        }
-
-        public IActionResult ContactUs()
-        {
-            return View();
-        }
-
-        public IActionResult Logout()
-        {
-            return RedirectToAction("Index", "Home");
-        }
-    }
-}
-✅ STEP 4: LAYOUT WITH PROFILE LOGO + DROPDOWN (IMPORTANT)
-📁 Views/Shared/_Layout.cshtml
+Perfect 👍
+Tumhi je image dila aahe te Blinkit-style RIGHT SIDE SLIDE CART aahe.
+Ata me exact same behaviour देतो:
+👉 Top-right cart logo
+👉 Click on cart logo → right side cart panel open
+👉 UI only (design)
+👉 No backend / no logic
+👉 ASP.NET MVC compatible
+✅ WHAT WE WILL BUILD (CLEAR)
+✔ Cart icon on navbar (right corner)
+✔ Click → Side cart opens (like Blinkit)
+✔ Items list
+✔ Bill details
+✔ Bottom green bar (Total + Login to Proceed)
+🧱 STEP 1: Cart Icon in Navbar
+Add this anywhere in your _Layout.cshtml navbar
 Copy code
 Html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AlwayzzzFresh</title>
+<!-- CART ICON -->
+<div class="cart-icon" onclick="openCart()">
+    🛒
+</div>
+CSS (add in same file or site.css)
+Copy code
+Css
+.cart-icon {
+    position: fixed;
+    top: 15px;
+    right: 25px;
+    font-size: 26px;
+    cursor: pointer;
+    z-index: 1100;
+}
+🧱 STEP 2: Cart Slide Panel (Blinkit Style)
+👉 Paste this below navbar or at bottom of page
+Copy code
+Html
+<!-- CART OVERLAY -->
+<div id="cartOverlay" class="cart-overlay" onclick="closeCart()"></div>
 
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 20px;
-            background: #f8f9fa;
-        }
+<!-- CART PANEL -->
+<div id="cartPanel" class="cart-panel">
 
-        .profile-icon {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .dropdown {
-            position: absolute;
-            right: 20px;
-            top: 60px;
-            background: #222;
-            color: white;
-            width: 200px;
-            border-radius: 8px;
-            display: none;
-            z-index: 1000;
-        }
-
-        .dropdown a {
-            display: block;
-            padding: 10px;
-            color: white;
-            text-decoration: none;
-        }
-
-        .dropdown a:hover {
-            background: #333;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- NAVBAR -->
-    <div class="navbar">
-        <h3>AlwayzzzFresh</h3>
-
-        <!-- PROFILE LOGO -->
-        <div>
-            <img src="~/images/profile.png"
-                 class="profile-icon"
-                 onclick="toggleMenu()" />
-
-            <!-- DROPDOWN MENU -->
-            <div id="profileMenu" class="dropdown">
-                <a href="/Account/MyAccount">My Account</a>
-                <a href="/Account/MyBasket">My Basket</a>
-                <a href="/Account/MyOrders">My Orders</a>
-                <a href="/Account/MyWallet">My Wallet</a>
-                <a href="/Account/ContactUs">Contact Us</a>
-                <a href="/Account/Logout" style="color:red">Logout</a>
-            </div>
-        </div>
+    <div class="cart-header">
+        <h5>My Cart</h5>
+        <span onclick="closeCart()">✖</span>
     </div>
 
-    <hr />
+    <div class="cart-body">
 
-    @RenderBody()
+        <div class="delivery">
+            ⏱ Delivery in <b>8 minutes</b><br />
+            <small>Shipment of 2 items</small>
+        </div>
 
-    <script>
-        function toggleMenu() {
-            var menu = document.getElementById("profileMenu");
-            menu.style.display = menu.style.display === "block" ? "none" : "block";
-        }
-    </script>
+        <!-- ITEM -->
+        <div class="cart-item">
+            <img src="/Content/images/milk.png" />
+            <div class="item-info">
+                <b>Aavin Toned Milk</b>
+                <div>500 ml</div>
+                <div>₹20</div>
+            </div>
+            <div class="qty">- 1 +</div>
+        </div>
 
-</body>
-</html>
-✅ Click profile → menu opens
-✅ No page auto-open
-✅ Works without Bootstrap
-✅ STEP 5: HOME VIEW
-📁 Views/Home/Index.cshtml
+        <!-- ITEM -->
+        <div class="cart-item">
+            <img src="/Content/images/curd.png" />
+            <div class="item-info">
+                <b>Hatsun Pouch Curd</b>
+                <div>500 g</div>
+                <div>₹38</div>
+            </div>
+            <div class="qty">- 1 +</div>
+        </div>
+
+        <!-- BILL -->
+        <div class="bill">
+            <h6>Bill details</h6>
+            <div><span>Items total</span><span>₹58</span></div>
+            <div><span>Delivery charge</span><span>₹25</span></div>
+            <div><span>Handling charge</span><span>₹2</span></div>
+            <div><span>Small cart charge</span><span>₹20</span></div>
+            <hr />
+            <div class="total"><b>Grand total</b><b>₹105</b></div>
+        </div>
+
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="cart-footer">
+        <div>₹105 TOTAL</div>
+        <button>Login to Proceed</button>
+    </div>
+
+</div>
+🎨 STEP 3: Cart CSS (IMPORTANT)
+Paste in site.css or <style> tag
+Copy code
+Css
+.cart-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+}
+
+.cart-panel {
+    position: fixed;
+    top: 0;
+    right: -380px;
+    width: 360px;
+    height: 100%;
+    background: #fff;
+    z-index: 1100;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-body {
+    padding: 15px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.delivery {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.cart-item img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.item-info {
+    flex: 1;
+    font-size: 13px;
+}
+
+.qty {
+    border: 1px solid green;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: green;
+    font-weight: bold;
+}
+
+.bill div {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.cart-footer {
+    background: green;
+    color: white;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-footer button {
+    background: white;
+    color: green;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+⚙️ STEP 4: JavaScript (Open / Close)
+Add before </body>
 Copy code
 Html
-<h2>Home Page</h2>
-<p>Click the profile icon (top right) to open menu.</p>
-✅ STEP 6: ACCOUNT VIEWS (SIMPLE)
-📁 Views/Account/MyAccount.cshtml
-Copy code
-Html
-<h2>My Account</h2>
-<p>Name: Demo User</p>
-<p>Email: demo@alwayzzzfresh.com</p>
-📁 Views/Account/MyBasket.cshtml
-Copy code
-Html
-<h2>My Basket</h2>
-<p>Your basket is empty.</p>
-📁 Views/Account/MyOrders.cshtml
-Copy code
-Html
-<h2>My Orders</h2>
-<p>No orders yet.</p>
-📁 Views/Account/MyWallet.cshtml
-Copy code
-Html
-<h2>My Wallet</h2>
-<p>Balance: ₹0</p>
-📁 Views/Account/ContactUs.cshtml
-Copy code
-Html
-<h2>Contact Us</h2>
-<p>Email: support@alwayzzzfresh.com</p>
-✅ STEP 7: PROFILE IMAGE
-📁 Create folder:
-Copy code
+<script>
+    function openCart() {
+        document.getElementById("cartPanel").style.right = "0";
+        document.getElementById("cartOverlay").style.display = "block";
+    }
 
-wwwroot/images
-📁 Add:
-Copy code
-
-profile.png
-(any user icon image)
-✅ HOW TO RUN
-Run ▶ IIS Express
-Open:
-Copy code
-
-https://localhost:7265
-✔ Home page opens
-✔ Profile icon visible
-✔ Click profile → menu opens
-✔ Click menu item → page opens
-🎯 FINAL RESULT (YOUR EXACT NEED)
-❌ MyAccount not opening directly
-✅ Only profile logo visible
-✅ Click profile → menu opens
-✅ My Account / Basket / Orders / Wallet open from menu
-If you want next:
-Logged-in user name inside menu
-Close dropdown when clicked outside
-Blinkit-style UI
-Mobile responsive
-Just tell me 👍
+    function closeCart() {
+        document.getElementById("cartPanel").style.right = "-380px";
+        document.getElementById("cartOverlay").style.display = "none";
+    }
+</script>
+✅ FINAL RESULT
+✔ Cart logo top-right
+✔ Click → Blinkit-style cart opens
+✔ UI same as image
+✔ No backend dependency
+✔ Easily connect later with real data
+🔥 NEXT (You choose)
+1️⃣ Connect cart data from Session
+2️⃣ Quantity + / - working
+3️⃣ Exact Blinkit colors & font
+4️⃣ Mobile view (bottom sheet style)
+Tu sang next step, apan पुढे जाऊ 💪
