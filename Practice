@@ -1,82 +1,100 @@
-Perfect 👍
-Below is ONLY what you asked, simple ASP.NET MVC, profile logo on right corner, dropdown menu, and each menu click opens its own page with logged-in user info.
-No extra UI, no React, no complexity.
-✅ WHAT THIS CODE DOES
-Profile logo at top-right
-Click logo → dropdown opens
-Menu items:
+Perfect 👍 now it’s 100% clear.
+👉 FINAL REQUIREMENT (corrected):
+App opens Home page
+Only profile logo visible on top-right
+Click on profile logo → a menu opens (dropdown)
+→ shows:
 My Account
 My Basket
 My Orders
 My Wallet
 Contact Us
 Logout
-Each menu opens a separate page
-Shows logged-in user information (dummy for now)
-1️⃣ USER MODEL
-📁 Models/User.cs
+Nothing opens automatically
+Pages open only when menu items are clicked
+ASP.NET Core MVC + HTTPS localhost
+Below is FULL CODE – STEP BY STEP, clean and minimal.
+✅ STEP 1: Program.cs (ROUTING)
+📁 Program.cs
 Copy code
 Csharp
-namespace AlwayzzzFresh.Models
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllersWithViews();
+
+var app = builder.Build();
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();
+✔ Home page opens first
+✔ No auto redirect to account
+✅ STEP 2: HOME CONTROLLER
+📁 Controllers/HomeController.cs
+Copy code
+Csharp
+using Microsoft.AspNetCore.Mvc;
+
+namespace PackageFoodManagementSystem.Application.Controllers
 {
-    public class User
+    public class HomeController : Controller
     {
-        public string Name { get; set; }
-        public string Email { get; set; }
+        public IActionResult Index()
+        {
+            return View();
+        }
     }
 }
-2️⃣ ACCOUNT CONTROLLER
+✅ STEP 3: ACCOUNT CONTROLLER (ALL MENU PAGES)
 📁 Controllers/AccountController.cs
 Copy code
 Csharp
-using System.Web.Mvc;
-using AlwayzzzFresh.Models;
+using Microsoft.AspNetCore.Mvc;
 
-namespace AlwayzzzFresh.Controllers
+namespace PackageFoodManagementSystem.Application.Controllers
 {
     public class AccountController : Controller
     {
-        private User LoggedUser()
-        {
-            return new User
-            {
-                Name = "Anurag Jadhav",
-                Email = "anurag@gmail.com"
-            };
-        }
-
-        public ActionResult MyAccount()
-        {
-            return View(LoggedUser());
-        }
-
-        public ActionResult MyBasket()
-        {
-            return View(LoggedUser());
-        }
-
-        public ActionResult MyOrders()
-        {
-            return View(LoggedUser());
-        }
-
-        public ActionResult MyWallet()
-        {
-            return View(LoggedUser());
-        }
-
-        public ActionResult ContactUs()
+        public IActionResult MyAccount()
         {
             return View();
         }
 
-        public ActionResult Logout()
+        public IActionResult MyBasket()
+        {
+            return View();
+        }
+
+        public IActionResult MyOrders()
+        {
+            return View();
+        }
+
+        public IActionResult MyWallet()
+        {
+            return View();
+        }
+
+        public IActionResult ContactUs()
+        {
+            return View();
+        }
+
+        public IActionResult Logout()
         {
             return RedirectToAction("Index", "Home");
         }
     }
 }
-3️⃣ LAYOUT (PROFILE LOGO + DROPDOWN)
+✅ STEP 4: LAYOUT WITH PROFILE LOGO + DROPDOWN (IMPORTANT)
 📁 Views/Shared/_Layout.cshtml
 Copy code
 Html
@@ -84,9 +102,19 @@ Html
 <html>
 <head>
     <title>AlwayzzzFresh</title>
+
     <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: #f8f9fa;
+        }
+
         .profile-icon {
-            width: 40px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
             cursor: pointer;
         }
 
@@ -97,105 +125,124 @@ Html
             background: #222;
             color: white;
             width: 200px;
-            display: none;
             border-radius: 8px;
-            padding: 10px;
+            display: none;
+            z-index: 1000;
         }
 
         .dropdown a {
             display: block;
+            padding: 10px;
             color: white;
             text-decoration: none;
-            padding: 8px;
         }
 
         .dropdown a:hover {
             background: #333;
-            border-radius: 5px;
         }
     </style>
 </head>
-
 <body>
-    <!-- Profile Icon -->
-    <div style="position:absolute; right:20px; top:10px;">
-        <img src="~/Content/profile.png" class="profile-icon" onclick="toggleMenu()" />
 
-        <div id="menu" class="dropdown">
-            <a href="/Account/MyAccount">My Account</a>
-            <a href="/Account/MyBasket">My Basket</a>
-            <a href="/Account/MyOrders">My Orders</a>
-            <a href="/Account/MyWallet">My Wallet</a>
-            <a href="/Account/ContactUs">Contact Us</a>
-            <a href="/Account/Logout">Logout</a>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <h3>AlwayzzzFresh</h3>
+
+        <!-- PROFILE LOGO -->
+        <div>
+            <img src="~/images/profile.png"
+                 class="profile-icon"
+                 onclick="toggleMenu()" />
+
+            <!-- DROPDOWN MENU -->
+            <div id="profileMenu" class="dropdown">
+                <a href="/Account/MyAccount">My Account</a>
+                <a href="/Account/MyBasket">My Basket</a>
+                <a href="/Account/MyOrders">My Orders</a>
+                <a href="/Account/MyWallet">My Wallet</a>
+                <a href="/Account/ContactUs">Contact Us</a>
+                <a href="/Account/Logout" style="color:red">Logout</a>
+            </div>
         </div>
     </div>
+
+    <hr />
 
     @RenderBody()
 
     <script>
         function toggleMenu() {
-            var menu = document.getElementById("menu");
+            var menu = document.getElementById("profileMenu");
             menu.style.display = menu.style.display === "block" ? "none" : "block";
         }
     </script>
+
 </body>
 </html>
-4️⃣ MY ACCOUNT PAGE
+✅ Click profile → menu opens
+✅ No page auto-open
+✅ Works without Bootstrap
+✅ STEP 5: HOME VIEW
+📁 Views/Home/Index.cshtml
+Copy code
+Html
+<h2>Home Page</h2>
+<p>Click the profile icon (top right) to open menu.</p>
+✅ STEP 6: ACCOUNT VIEWS (SIMPLE)
 📁 Views/Account/MyAccount.cshtml
 Copy code
 Html
-@model AlwayzzzFresh.Models.User
-
 <h2>My Account</h2>
-<p><b>Name:</b> @Model.Name</p>
-<p><b>Email:</b> @Model.Email</p>
-5️⃣ MY BASKET PAGE
+<p>Name: Demo User</p>
+<p>Email: demo@alwayzzzfresh.com</p>
 📁 Views/Account/MyBasket.cshtml
 Copy code
 Html
-@model AlwayzzzFresh.Models.User
-
 <h2>My Basket</h2>
-<p>User: @Model.Name</p>
 <p>Your basket is empty.</p>
-6️⃣ MY ORDERS PAGE
 📁 Views/Account/MyOrders.cshtml
 Copy code
 Html
-@model AlwayzzzFresh.Models.User
-
 <h2>My Orders</h2>
-<p>User: @Model.Name</p>
-<p>No orders placed yet.</p>
-7️⃣ MY WALLET PAGE
+<p>No orders yet.</p>
 📁 Views/Account/MyWallet.cshtml
 Copy code
 Html
-@model AlwayzzzFresh.Models.User
-
 <h2>My Wallet</h2>
-<p>User: @Model.Name</p>
 <p>Balance: ₹0</p>
-8️⃣ CONTACT US PAGE
 📁 Views/Account/ContactUs.cshtml
 Copy code
 Html
 <h2>Contact Us</h2>
 <p>Email: support@alwayzzzfresh.com</p>
-<p>Phone: 9876543210</p>
-9️⃣ PROFILE IMAGE
-📁 Content/profile.png
-➡ Put any user icon image
-✅ FINAL RESULT
-✔ Profile icon on right
-✔ Click → dropdown menu
-✔ Each menu opens its own page
-✔ Logged-in user info shown
-✔ Clean & simple ASP.NET MVC
+✅ STEP 7: PROFILE IMAGE
+📁 Create folder:
+Copy code
+
+wwwroot/images
+📁 Add:
+Copy code
+
+profile.png
+(any user icon image)
+✅ HOW TO RUN
+Run ▶ IIS Express
+Open:
+Copy code
+
+https://localhost:7265
+✔ Home page opens
+✔ Profile icon visible
+✔ Click profile → menu opens
+✔ Click menu item → page opens
+🎯 FINAL RESULT (YOUR EXACT NEED)
+❌ MyAccount not opening directly
+✅ Only profile logo visible
+✅ Click profile → menu opens
+✅ My Account / Basket / Orders / Wallet open from menu
 If you want next:
-Database login
-Real cart & orders
-Bootstrap UI like Blinkit
-Session-based login
-Just tell me 🔥
+Logged-in user name inside menu
+Close dropdown when clicked outside
+Blinkit-style UI
+Mobile responsive
+Just tell me 👍
