@@ -1,366 +1,39 @@
-site.css
+using Microsoft.EntityFrameworkCore.Migrations;
 
-html {
-  font-size: 14px;
-}
+#nullable disable
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
-}
-
-CartController.cs
-using Microsoft.AspNetCore.Mvc;
-using mvc.Models;
-
-namespace mvc.Controllers
+namespace PackageFoodManagementSystem.Application.Migrations
 {
-    public class CartController : Controller
+    public partial class AddPhoneAndStatusToCustomer : Migration
     {
-        private static List<CartItem> _cart = new List<CartItem>();
-
-        public IActionResult MyCart()
+        protected override void Up(MigrationBuilder migrationBuilder)
         {
-            return View(_cart);
+            // Add Phone column
+            migrationBuilder.AddColumn<string>(
+                name: "Phone",
+                table: "Customers",
+                type: "nvarchar(max)",
+                nullable: true);
+
+            // Add Status column
+            migrationBuilder.AddColumn<string>(
+                name: "Status",
+                table: "Customers",
+                type: "nvarchar(max)",
+                nullable: true);
         }
 
-        [HttpPost]
-        [IgnoreAntiforgeryToken]
-        public IActionResult AddToCart(int id, string name, string quantity, decimal price)
+        protected override void Down(MigrationBuilder migrationBuilder)
         {
-            var existing = _cart.FirstOrDefault(c => c.Id == id);
-            if (existing != null)
-            {
-                existing.Count++;
-            }
-            else
-            {
-                _cart.Add(new CartItem
-                {
-                    Id = id,
-                    Name = name,
-                    Quantity = quantity,
-                    Price = price,
-                    Count = 1
-                });
-            }
-            return Ok();
+            // Remove Phone column
+            migrationBuilder.DropColumn(
+                name: "Phone",
+                table: "Customers");
+
+            // Remove Status column
+            migrationBuilder.DropColumn(
+                name: "Status",
+                table: "Customers");
         }
     }
 }
-HomeController.cs
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using mvc.Models;
-
-namespace mvc.Controllers
-{
-    public class HomeController : Controller
-    {
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-    }
-}
-PaymentController.cs
-using Microsoft.AspNetCore.Mvc;
-
-namespace mvc.Controllers
-{
-    public class PaymentController : Controller
-    {
-        public IActionResult Checkout()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [IgnoreAntiforgeryToken]
-        public IActionResult Confirm(string method)
-        {
-            return RedirectToAction("Success");
-        }
-
-        public IActionResult Success()
-        {
-            return View();
-        }
-    }
-}
-ProductController.cs
-using Microsoft.AspNetCore.Mvc;
-using mvc.Models;
-
-namespace mvc.Controllers
-{
-    public class ProductController : Controller
-    {
-        public IActionResult Shop()
-        {
-            var products = new List<Product>
-            {
-                new Product { Id = 1, Name = "Aavin Toned Milk", Quantity = "500 ml", Price = 20 },
-                new Product { Id = 2, Name = "Hatsun Pouch Curd", Quantity = "500 g", Price = 38 }
-            };
-
-            return View(products);
-        }
-    }
-}
-Models/cartItem.cs
-namespace mvc.Models
-{
-    public class CartItem
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Quantity { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public int Count { get; set; }
-    }
-}
-
-Models/Product.cs
-namespace mvc.Models
-{
-    public class Product
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Quantity { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-    }
-}
-
-views/Cart/MyCart.cshtml
-@model List<mvc.Models.CartItem>
-@{
-    var itemTotal = Model.Sum(i => i.Price * i.Count);
-    var deliveryCharge = 25;
-    var handlingCharge = 2;
-    var smallCartCharge = 20;
-    var grandTotal = itemTotal + deliveryCharge + handlingCharge + smallCartCharge;
-}
-
-<div style="max-width:600px;margin:auto;padding:20px;">
-    <h2 style="color:#27ae60;">🛒 My Cart</h2>
-    <p>🚚 Delivery in <strong>8 minutes</strong></p>
-    <p>📦 Shipment of <strong>@Model.Count items</strong></p>
-
-    <div style="margin-top:20px;">
-        @foreach (var item in Model)
-        {
-            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;">
-                <div>
-                    <h4 style="margin:0;">@item.Name</h4>
-                    <small>@item.Quantity</small>
-                </div>
-                <div>
-                    <span style="background:#27ae60;color:white;padding:4px 10px;border-radius:20px;">
-                        @item.Count × ₹@item.Price
-                    </span>
-                </div>
-            </div>
-        }
-    </div>
-
-    <div style="margin-top:20px;background:#f9f9f9;padding:15px;border-radius:8px;">
-        <h4>📑 Bill details</h4>
-        <p>Items total: ₹@itemTotal</p>
-        <p>Delivery charge: ₹@deliveryCharge</p>
-        <p>Handling charge: ₹@handlingCharge</p>
-        <p>Small cart charge: ₹@smallCartCharge</p>
-        <hr />
-        <p><strong>Grand total: ₹@grandTotal</strong></p>
-    </div>
-
-    <form asp-controller="Payment" asp-action="Checkout" method="get" style="margin-top:20px;">
-        <button type="submit"
-                style="background:#27ae60;color:white;padding:12px 20px;border:none;border-radius:6px;width:100%;font-size:16px;">
-            💳 Proceed to Payment
-        </button>
-    </form>
-</div>
-
-views/Payment/Checkout.cshtml
-@{
-    ViewData["Title"] = "Payment";
-}
-
-<style>
-    .payment-option {
-        border: 1px solid #ddd;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-
-        .payment-option:hover {
-            background: #eafaf1;
-            border-color: #27ae60;
-        }
-
-    .checkout-btn {
-        background: #27ae60;
-        color: white;
-        padding: 12px;
-        border: none;
-        border-radius: 6px;
-        width: 100%;
-        font-size: 16px;
-        margin-top: 20px;
-    }
-</style>
-
-<div style="max-width:600px;margin:auto;padding:20px;">
-    <h2 style="color:#27ae60;">💳 Payment</h2>
-    <p>Please select your preferred payment method:</p>
-
-    <form asp-controller="Payment" asp-action="Confirm" method="post">
-        @Html.AntiForgeryToken()
-
-        <div class="payment-option">
-            <input type="radio" name="method" value="UPI" /> UPI (Google Pay, PhonePe, Paytm)
-        </div>
-        <div class="payment-option">
-            <input type="radio" name="method" value="Card" /> Credit/Debit Card
-        </div>
-        <div class="payment-option">
-            <input type="radio" name="method" value="NetBanking" /> Net Banking
-        </div>
-        <div class="payment-option">
-            <input type="radio" name="method" value="COD" /> Cash on Delivery
-        </div>
-
-        <button type="submit" class="checkout-btn">✅ Confirm Payment</button>
-    </form>
-</div>
-
-
-views/Payment/Success.cshtml
-@{
-    ViewData["Title"] = "Payment Success";
-    var orderId = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
-}
-
-<div style="text-align:center;margin-top:50px;">
-    <h2 style="color:#27ae60;">✅ Payment Successful!</h2>
-    <p>Your order <strong>#@orderId</strong> has been placed successfully.</p>
-    <p>It will be delivered within <strong>8 minutes</strong>.</p>
-
-    <a asp-controller="Product" asp-action="Shop"
-       style="display:inline-block;margin-top:20px;background:#27ae60;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-size:16px;">
-        🛍️ Continue Shopping
-    </a>
-</div>
-
-Viwes/Product/Shop.cshtml
-@model List<mvc.Models.Product>
-@{
-    ViewData["Title"] = "Shop Products";
-}
-
-<h2>Available Products</h2>
-<div style="display:flex;gap:20px;">
-    @foreach (var product in Model)
-    {
-        <div class="product-card"
-             data-id="@product.Id"
-             data-name="@product.Name"
-             data-quantity="@product.Quantity"
-             data-price="@product.Price"
-             style="border:1px solid #ccc;padding:15px;border-radius:8px;width:250px;">
-            <h3>@product.Name</h3>
-            <p>@product.Quantity</p>
-            <p>₹@product.Price</p>
-            <button onclick="addToCart(this)">+</button>
-        </div>
-    }
-</div>
-
-<script>
-    let cartCount = 0;
-
-    function addToCart(button) {
-        const card = button.closest(".product-card");
-        const id = card.getAttribute("data-id");
-        const name = card.getAttribute("data-name");
-        const quantity = card.getAttribute("data-quantity");
-        const price = card.getAttribute("data-price");
-
-        cartCount++;
-        document.getElementById("cart-count").innerText = cartCount;
-
-        fetch('/Cart/AddToCart', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `id=${id}&name=${encodeURIComponent(name)}&quantity=${encodeURIComponent(quantity)}&price=${price}`
-        });
-    }
-</script>
-
-_Layout.cshtml
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewData["Title"] - AlwayzzzFresh</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-</head>
-<body>
-    <header style="padding:10px;">
-        <a asp-controller="Cart" asp-action="MyCart" style="float:right;position:relative;">
-            <i class="fa fa-shopping-cart" style="font-size:24px;color:#27ae60;"></i>
-            <span id="cart-count"
-                  style="background:red;color:white;border-radius:50%;padding:2px 6px;font-size:14px;position:absolute;top:-10px;right:-10px;">
-                0
-            </span>
-        </a>
-    </header>
-
-    <main>
-        @RenderBody()
-    </main>
-
-    <footer>
-        <p>&copy; 2025 - AlwayzzzFresh</p>
-    </footer>
-</body>
-</html>
