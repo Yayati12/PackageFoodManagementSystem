@@ -1,3 +1,661 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PackageFoodManagementSystem.Services.Helpers;
+using PackageFoodManagementSystem.Repository.Models;
+using PackageFoodManagementSystem.Repository.Data;
+using System.Threading.Tasks;
+using PackageFoodManagementSystem.Services.Interfaces;
+
+namespace PackagedFoodManagementSystem.Controllers
+{
+    public class HomeController : Controller
+    {
+        private readonly IUserService _userService;
+        private readonly ApplicationDbContext _db;
+
+        public HomeController(IUserService userService, ApplicationDbContext db)
+        {
+            _userService = userService;
+            _db = db;
+        }
+
+        public IActionResult Index() => View();
+
+        // --- Sign In ---
+        [HttpGet]
+        public IActionResult SignIn() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignIn(UserAuthentication loginUser)
+        {
+            if (!ModelState.IsValid) return View(loginUser);
+
+            var user = await _db.UserAuthentications
+                .FirstOrDefaultAsync(u => u.Email == loginUser.Email);
+
+            if (user == null || !PasswordHelper.VerifyPassword(loginUser.Password, user.Password))
+            {
+                TempData["ErrorMessage"] = "Incorrect Login Credentials";
+                return View(loginUser);
+            }
+
+            TempData["SuccessMessage"] = "Login Successful";
+
+            return user.Role switch
+            {
+                "Admin" => RedirectToAction("AdminDashboard"),
+                "StoreManager" => RedirectToAction("ManagerDashboard"),
+                _ => RedirectToAction(nameof(Index))
+            };
+        }
+
+        // --- Sign Up ---
+        [HttpGet]
+        public IActionResult SignUp() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignUp(UserAuthentication user)
+        {
+            if (!ModelState.IsValid) return View(user);
+
+            var existingUser = await _db.UserAuthentications
+                .FirstOrDefaultAsync(u => u.Email == user.Email);
+
+
+            if (existingUser != null)
+            {
+                TempData["ErrorMessage"] = "Email already exists. Please use a different email.";
+                return View(user);
+            }
+
+            await _userService.CreateUserAsync(
+                user.Name,
+                user.MobileNumber,
+                user.Email,
+                user.Password);
+
+            TempData["SuccessMessage"] = "SignUp Successful";
+            return RedirectToAction(nameof(SignIn));
+        }
+
+        public IActionResult Dashboard() => View();
+
+        public async Task<IActionResult> AdminDashboard()
+        {
+            ViewBag.TotalCustomers = await _db.UserAuthentications.CountAsync(u => u.Role == "User");
+            ViewBag.TotalStoreManagers = await _db.UserAuthentications.CountAsync(u => u.Role == "StoreManager");
+            ViewBag.TotalOrders = await _db.Orders.CountAsync();
+
+            return View();
+        }
+
+        public IActionResult ManagerDashboard() => View();
+
+        // --- User Management (CRUD) ---
+        public async Task<IActionResult> Users()
+        {
+            var users = await _db.UserAuthentications.ToListAsync();
+            return View(users); // ✅ pass model to view
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddUser(UserAuthentication user)
+        {
+            if (!ModelState.IsValid)
+                return View("Users", await _db.UserAuthentications.ToListAsync());
+
+            user.Password = PasswordHelper.HashPassword(user.Password);
+            _db.UserAuthentications.Add(user);
+            await _db.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "User added successfully!";
+            return RedirectToAction(nameof(Users));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateUser(UserAuthentication user)
+        {
+            if (!ModelState.IsValid)
+            {
+                var users = await _db.UserAuthentications.ToListAsync();
+                return View("Users", users); // show the same page with errors
+            }
+
+            var existingUser = await _db.UserAuthentications.FindAsync(user.Id);
+            if (existingUser == null) return NotFound();
+
+            existingUser.Name = user.Name;
+            existingUser.Email = user.Email;
+            existingUser.MobileNumber = user.MobileNumber;
+            existingUser.Role = user.Role;
+
+            if (!string.IsNullOrEmpty(user.Password))
+                existingUser.Password = PasswordHelper.HashPassword(user.Password);
+
+            await _db.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "User updated successfully!";
+            return RedirectToAction(nameof(Users));
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _db.UserAuthentications.FindAsync(id);
+            if (user == null) return NotFound();
+
+            _db.UserAuthentications.Remove(user);
+            await _db.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "User deleted successfully!";
+            return RedirectToAction(nameof(Users));
+        }
+
+        // --- Other Pages ---
+        public IActionResult AboutUs() => View();
+        public IActionResult ContactUs() => View();
+        public IActionResult AdminInventory() => View();
+        public IActionResult Report() => View();
+        public IActionResult Stores() => View();
+
+        public IActionResult Welcome()
+        {
+            if (User.Identity.IsAuthenticated)
+                return RedirectToAction("Index");
+            return View();
+        }
+    }
+}
+
+
+
+
+
+using PackageFoodManagementSystem.Repository.Data;
+using PackageFoodManagementSystem.Repository.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using PackageFoodManagementSystem.Repository.Interfaces;
+using PackageFoodManagementSystem.Services.Implementations;
+using PackageFoodManagementSystem.Services.Interfaces;
+using PackageFoodManagementSystem.Repository.Implementations;
+
+
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+builder.Services.AddScoped<IBillRepository, BillRepository>();
+
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddScoped<IBillingService, BillingService>();
+
+// --- 1. ADD SERVICES (Before builder.Build()) ---
+
+builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+
+// Move this HERE (above builder.Build)
+
+
+// DI: map interfaces to EFDB implementations
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+// ✅ Add authentication if you plan to use cookies
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Home/SignIn";
+        options.LogoutPath = "/Home/Logout";
+    });
+
+var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+//// ✅ Global no-cache middleware
+//app.Use(async (context, next) =>
+//{
+//    context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+//    context.Response.Headers["Pragma"] = "no-cache";
+//    context.Response.Headers["Expires"] = "0";
+//    await next();
+//});
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Welcome}/{id?}");
+
+app.Run();
+
+
+
+@{
+    ViewBag.Title = "Sign Up";
+    Layout = "~/Views/Shared/_Layout1.cshtml";
+}
+
+<section class="page-hero"
+         style="background-image: url('@Url.Content("~/Images/background.jpg")');"
+         aria-label="Hero background">
+    <div class="form-container form-container--elevated">
+        <h2>Sign Up</h2>
+
+        <!-- When you wire server-side later, add: method="post" asp-controller="Home" asp-action="SignUp" -->
+        <form asp-action="SignUp" asp-controller="Home" method="post">
+            <!-- Full Name -->
+            <input type="text" id="name" name="Name" placeholder="Name" required />
+            <span class="error" id="nameError"></span>
+
+
+            <!-- Email -->
+            <input type="email" id="email" name="Email" placeholder="Email" required />
+            <span class="error" id="emailError"></span>
+
+
+            <!-- Mobile -->
+            <input type="text" id="mobilenumber" name="MobileNumber" placeholder="Mobile Number" required />
+            <span class="error" id="mobileError"></span>
+
+
+            <!-- Password (ID must be 'password') -->
+            <div class="password-wrapper">
+                <input type="password" id="password" name="Password" placeholder="Password" required />
+                <button type="button"
+                        class="toggle-password"
+                        data-target="password"
+                        aria-label="Show password"
+                        aria-pressed="false">
+                    <i class="fa fa-eye" aria-hidden="true"></i>
+                </button>
+            </div>
+            <span class="error" id="passwordError"></span>
+
+            <!-- Confirm Password (ID must be 'confirmPassword') -->
+            <div class="password-wrapper">
+                <input type="password" id="confirmPassword" name="ConfirmPassword" placeholder="Re-enter Password" required />
+                <button type="button"
+                        class="toggle-password"
+                        data-target="confirmPassword"
+                        aria-label="Show password"
+                        aria-pressed="false">
+                    <i class="fa fa-eye" aria-hidden="true"></i>
+                </button>
+            </div>
+            <span class="error" id="confirmPasswordError"></span>
+
+            <!-- Submit -->
+            <button type="submit" class="btn">Sign Up</button>
+        </form>
+    </div>
+</section>
+@if (TempData["SuccessMessage"] != null)
+{
+    <script>
+        alert('@TempData["SuccessMessage"]');
+    </script>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <script> alert('@TempData["ErrorMessage"]'); </script>
+}
+
+
+
+
+
+@{
+    ViewBag.Title = "Sign In";
+    Layout = "~/Views/Shared/_Layout1.cshtml";
+}
+
+<section class="page-hero"
+         style="background-image: url('@Url.Content("~/Images/background.jpg")');"
+         aria-label="Hero background">
+    <div class="form-container form-container--elevated">
+        <h2>Sign In</h2>
+
+        <form asp-action="SignIn" asp-controller="Home" method="post">
+            <!-- Email -->
+            <input type="email" id="email" name="Email" placeholder="Email" required />
+            <span class="error" id="emailError"></span>
+
+            <!-- Password -->
+            <div class="password-wrapper">
+                <input type="password" id="password" name="Password" placeholder="Password" required />
+                <button type="button"
+                        class="toggle-password"
+                        data-target="password"
+                        aria-label="Show password"
+                        aria-pressed="false">
+                    <i class="fa fa-eye" aria-hidden="true"></i>
+                </button>
+            </div>
+            @* <span class="error" id="passwordError"></span> *@
+            <span class="error"></span>
+            <!-- Submit -->
+            <div><button type="submit" class="btn">Sign In</button></div>
+            
+        </form>
+    </div>
+</section>
+@if (TempData["ErrorMessage"] != null)
+{
+    <script>
+        alert('@TempData["ErrorMessage"]');
+    </script>
+}
+
+
+
+@{
+    ViewData["Title"] = "My Account";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3 border-end">
+            @Html.Partial("_AccountSidebar")
+        </div>
+
+        <div class="col-md-9 ps-md-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">Profile Details <span class="text-success">(Edit)</span></h2>
+                <span class="badge bg-light text-dark border p-2 rounded-pill">Member since Dec 2025</span>
+            </div>
+
+            <div class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
+                <form id="profileForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">FULL NAME</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fa-regular fa-user text-success"></i></span>
+                                <input type="text" class="form-control border-start-0" value="Yayati Nehe">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">PHONE NUMBER</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white text-muted">+91</span>
+                                <input type="text" class="form-control border-start-0" value="1234567">
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <label class="form-label small fw-bold text-muted">EMAIL ADDRESS</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fa-regular fa-envelope text-success"></i></span>
+                                <input type="email" class="form-control border-start-0" value="yayati@gmail.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 d-flex gap-2">
+                        <button type="button" class="btn btn-success px-4 rounded-pill fw-bold" id="btnUpdate">
+                            Update Profile
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="row mt-4 g-3 text-center">
+                <div class="col-md-4">
+                    <div class="p-3 bg-white border rounded-3 shadow-sm">
+                        <h4 class="fw-bold mb-0">12</h4>
+                        <small class="text-muted">Total Orders</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-white border rounded-3 shadow-sm">
+                        <h4 class="fw-bold mb-0 text-success">₹450</h4>
+                        <small class="text-muted">Wallet Balance</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-white border rounded-3 shadow-sm">
+                        <h4 class="fw-bold mb-0 text-warning">5</h4>
+                        <small class="text-muted">Smart Items</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Interaction: Loading effect on button click
+    document.getElementById('btnUpdate').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Updating...';
+
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Updated Successfully!';
+            btn.className = "btn btn-primary px-4 rounded-pill fw-bold";
+
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.className = "btn btn-success px-4 rounded-pill fw-bold";
+                btn.disabled = false;
+            }, 2000);
+        }, 1500);
+    });
+</script>
+
+
+
+
+using System.Threading;
+using System.Threading.Tasks;
+using PackageFoodManagementSystem.Repository.Data;
+using PackageFoodManagementSystem.Repository.Interfaces;
+
+namespace PackageFoodManagementSystem.Repository.Implementations
+{
+    public class UserRepository : IUserRepository
+    {
+        private readonly ApplicationDbContext _db;
+
+        public UserRepository(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        public async Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
+        {
+            await _db.Set<T>().AddAsync(entity, cancellationToken);
+        }
+
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return _db.SaveChangesAsync(cancellationToken);
+        }
+    }
+}
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace PackageFoodManagementSystem.Repository.Interfaces
+{
+    public interface IUserRepository
+    {
+        Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class;
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
+    }
+}
+
+
+
+namespace PackageFoodManagementSystem.Repository.Models
+{
+    public class UserAuthentication
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string MobileNumber { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+
+        // ✅ New field
+        public string Role { get; set; } = "User"; // default role
+    }
+}
+
+
+
+
+
+
+using PackageFoodManagementSystem.Services.Helpers;
+using PackageFoodManagementSystem.Repository.Models;
+using System.Threading;
+using System.Threading.Tasks;
+using PackageFoodManagementSystem.Services.Interfaces;
+using PackageFoodManagementSystem.Repository.Interfaces;
+
+namespace PackageFoodManagementSystem.Services.Implementations
+{
+        public class UserService : IUserService
+        {
+            private readonly IUserRepository _userRepository;
+
+            public UserService(IUserRepository userRepository)
+            {
+                _userRepository = userRepository;
+            }
+
+            public async Task<int> CreateUserAsync(
+                string name,
+                string mobileNumber,
+                string email,
+                string password,
+                CancellationToken cancellationToken = default)
+            {
+                var user = new UserAuthentication
+                {
+                    Name = name,
+                    Email = email,
+                    MobileNumber = mobileNumber,
+                    Password = PasswordHelper.HashPassword(password),
+                    Role = "User" // ✅ default role
+                };
+
+                await _userRepository.AddAsync(user, cancellationToken);
+                await _userRepository.SaveChangesAsync(cancellationToken);
+
+                return user.Id;
+
+            }
+        }
+}
+
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace PackageFoodManagementSystem.Services.Interfaces
+{
+    public interface IUserService
+    {
+        Task<int> CreateUserAsync(
+            string name,
+            string mobileNumber,
+            string email,
+            string password,
+            CancellationToken cancellationToken = default);
+    }
+}
+
+
+
+using System.ComponentModel.DataAnnotations;
+
+namespace PackageFoodManagementSystem.Repository.Models
+{
+    public class Customer
+    {
+        [Key]
+        public int CustomerId { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        [Required, EmailAddress]
+        public string Email { get; set; }
+        [Required, Phone]
+        public string Phone { get; set; }
+
+        public string? Status { get; set; }
+
+        public ICollection<CustomerAddress> Addresses { get; set; }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 PackageFoodManagementSystem.Application
 css
 csutomer-home.css
