@@ -1,3 +1,140 @@
+
+
+
+
+
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace PackageFoodManagementSystem.Repository.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddUserIdFKToCustomerTable : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.RenameColumn(
+                name: "OrderID",
+                table: "Orders",
+                newName: "OrderId");
+
+            migrationBuilder.RenameColumn(
+                name: "Id",
+                table: "Customers",
+                newName: "CustomerId");
+
+            migrationBuilder.AddColumn<int>(
+                name: "BillID",
+                table: "Inventories",
+                type: "int",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "Phone",
+                table: "Customers",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
+
+            migrationBuilder.AddColumn<string>(
+                name: "Status",
+                table: "Customers",
+                type: "nvarchar(max)",
+                nullable: true);
+
+            migrationBuilder.AddColumn<int>(
+                name: "UserId",
+                table: "Customers",
+                type: "int",
+                nullable: true);
+
+            migrationBuilder.CreateTable(
+                name: "CustomerAddresses",
+                columns: table => new
+                {
+                    AddressId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    StreetAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PostalCode = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerAddresses", x => x.AddressId);
+                    table.ForeignKey(
+                        name: "FK_CustomerAddresses_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "CustomerId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerAddresses_CustomerId",
+                table: "CustomerAddresses",
+                column: "CustomerId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "CustomerAddresses");
+
+            migrationBuilder.DropColumn(
+                name: "BillID",
+                table: "Inventories");
+
+            migrationBuilder.DropColumn(
+                name: "Phone",
+                table: "Customers");
+
+            migrationBuilder.DropColumn(
+                name: "Status",
+                table: "Customers");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "Customers");
+
+            migrationBuilder.RenameColumn(
+                name: "OrderId",
+                table: "Orders",
+                newName: "OrderID");
+
+            migrationBuilder.RenameColumn(
+                name: "CustomerId",
+                table: "Customers",
+                newName: "Id");
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PackageFoodManagementSystem.Services.Helpers;
